@@ -8,6 +8,7 @@ const { getConnection } = require('../db');
 const Conversion = require('../models/Conversion');
 const { success, failure } = require('./response');
 const validate = require('jsonschema').validate;
+const adminAuthenticator = require('./authenticator').adminAuthMiddleware;
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ router.get('/', async (req, res) => {
 /**
  * Route for POST, edit conversion.
  */
-router.post('/edit', async (req, res) => {
+router.post('/edit', adminAuthenticator('edit conversions'), async (req, res) => {
 	const validConversion = {
 		type: 'object',
 		maxProperties: 6, // Prevent parameter injection attacks
@@ -93,7 +94,7 @@ router.post('/edit', async (req, res) => {
 /**
  * Route for POST add conversion.
  */
-router.post('/addConversion', async (req, res) => {
+router.post('/addConversion', adminAuthenticator('create conversions'), async (req, res) => {
 	const validConversion = {
 		type: 'object',
 		maxProperties: 6, // Prevent parameter injection attacks
@@ -159,7 +160,7 @@ router.post('/addConversion', async (req, res) => {
 /**
  * Route for POST, delete conversion.
  */
-router.post('/delete', async (req, res) => {
+router.post('/delete', adminAuthenticator('delete conversions'), async (req, res) => {
 	// Only require a source and destination id
 	const validConversion = {
 		type: 'object',
