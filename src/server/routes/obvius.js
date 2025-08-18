@@ -29,7 +29,13 @@ const { obviusUsernameAndPasswordAuthMiddleware } = require('./authenticator');
 const { getConnection } = require('../db');
 const escapeHtml = require('escape-html');
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+	storage: multer.memoryStorage(),
+	limits: {
+		fileSize: 50 * 1024 * 1024, // 50MB limit
+		files: 10 // Max 10 files
+	}
+});
 const router = express.Router();
 
 // Here, the use of upload.array() allows the lowercaseParams middleware to
@@ -125,11 +131,22 @@ function verifyObviusUser(req, res, next) {
 	} else if (!username) {
 		failure(req, res, 'username parameter is required.');
 		return;
-	} else { // Authenticate Obvius user.
-		req.body.username = username;
-		req.body.password = password;
-		obviusUsernameAndPasswordAuthMiddleware('Obvius pipeline')(req, res, next);
 	}
+	
+	// Basic parameter validation for security
+	if (typeof password !== 'string' || password.length > 1000) {
+		failure(req, res, 'Invalid password format.');
+		return;
+	}
+	if (typeof username !== 'string' || username.length > 254) {
+		failure(req, res, 'Invalid username format.');
+		return;
+	}
+	
+	// Authenticate Obvius user.
+	req.body.username = username;
+	req.body.password = password;
+	obviusUsernameAndPasswordAuthMiddleware('Obvius pipeline')(req, res, next);
 }
 
 
@@ -152,8 +169,13 @@ router.all('/', obviusLog, verifyObviusUser, async (req, res) => {
 	}
 
 	if (mode === obvius.mode.logfile_upload) {
-		if (!req.param('serialnumber', false)) {
+		const serialNumber = req.param('serialnumber', false);
+		if (!serialNumber) {
 			failure(req, res, 'Logfile Upload Requires Serial Number');
+			return;
+		}
+		if (typeof serialNumber !== 'string' || serialNumber.length > 100) {
+			failure(req, res, 'Invalid serial number format');
 			return;
 		}
 		const conn = getConnection();
@@ -198,12 +220,25 @@ router.all('/', obviusLog, verifyObviusUser, async (req, res) => {
 
 	if (mode === obvius.mode.config_file_upload) {
 		// Check required parameters
-		if (!req.param('serialnumber', false)) {
+		const serialNumber = req.param('serialnumber', false);
+		const modbusDevice = req.param('modbusdevice', false);
+		
+		if (!serialNumber) {
 			failure(req, res, 'Config Upload Requires Serial Number');
 			return;
 		}
-		if (!req.param('modbusdevice', false)) {
+		if (!modbusDevice) {
 			failure(req, res, 'Config Upload Requires Modbus Device ID');
+			return;
+		}
+		
+		// Basic parameter validation
+		if (typeof serialNumber !== 'string' || serialNumber.length > 100) {
+			failure(req, res, 'Invalid serial number format');
+			return;
+		}
+		if (typeof modbusDevice !== 'string' || modbusDevice.length > 50) {
+			failure(req, res, 'Invalid modbus device format');
 			return;
 		}
 		const conn = getConnection();

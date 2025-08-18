@@ -20,7 +20,8 @@ router.get('/line/count/meters/:meter_ids', async (req, res) => {
 		required: ['meter_ids'],
 		properties: {
 			meter_ids: {
-				type: 'string'
+				type: 'string',
+				maxLength: 1000
 			}
 		}
 	};
@@ -30,7 +31,8 @@ router.get('/line/count/meters/:meter_ids', async (req, res) => {
 		required: ['timeInterval'],
 		properties: {
 			timeInterval: {
-				type: 'string'
+				type: 'string',
+				maxLength: 500
 			}
 		}
 	};
@@ -60,8 +62,10 @@ router.get('/line/raw/meter/:meter_id', async (req, res) => {
 		maxProperties: 1,
 		required: ['meter_id'],
 		properties: {
-			meter_ids: {
-				type: 'integer'
+			meter_id: {
+				type: 'integer',
+				minimum: 1,
+				maximum: 2147483647
 			}
 		}
 	};
@@ -71,7 +75,8 @@ router.get('/line/raw/meter/:meter_id', async (req, res) => {
 		required: ['timeInterval'],
 		properties: {
 			timeInterval: {
-				type: 'string'
+				type: 'string',
+				maxLength: 500
 			}
 		}
 	};
