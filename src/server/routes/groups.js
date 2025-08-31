@@ -9,14 +9,13 @@ const validate = require('jsonschema').validate;
 const Unit = require('../models/Unit');
 const { getConnection } = require('../db');
 const Group = require('../models/Group');
-const adminAuthenticator = require('./authenticator').adminAuthMiddleware;
-const optionalAuthenticator = require('./authenticator').optionalAuthMiddleware;
+const { adminAuthMiddleware, optionalAuthMiddleware } = require('./authenticator');
 const { log } = require('../log');
 const Point = require('../models/Point');
 const { failure, success } = require('./response');
 
 const router = express.Router();
-router.use(optionalAuthenticator);
+router.use(optionalAuthMiddleware);
 
 /**
  * Given a meter or group, return id, name, displayable, gps, note, area.
@@ -201,7 +200,7 @@ router.get('/parents/:group_id', async (req, res) => {
 	}
 });
 
-router.post('/create', adminAuthenticator('create groups'), async (req, res) => {
+router.post('/create', adminAuthMiddleware('create groups'), async (req, res) => {
 	const validGroup = {
 		type: 'object',
 		additionalProperties: false,
@@ -301,7 +300,7 @@ router.post('/create', adminAuthenticator('create groups'), async (req, res) => 
 	}
 });
 
-router.put('/edit', adminAuthenticator('edit groups'), async (req, res) => {
+router.put('/edit', adminAuthMiddleware('edit groups'), async (req, res) => {
 	const validGroup = {
 		type: 'object',
 		additionalProperties: false,
@@ -417,7 +416,7 @@ router.put('/edit', adminAuthenticator('edit groups'), async (req, res) => {
 	}
 });
 
-router.post('/delete', adminAuthenticator('delete groups'), async (req, res) => {
+router.post('/delete', adminAuthMiddleware('delete groups'), async (req, res) => {
 	const validParams = {
 		type: 'object',
 		additionalProperties: false,

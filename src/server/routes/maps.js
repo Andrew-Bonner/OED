@@ -7,15 +7,14 @@ const { Map } = require('../models/Map');
 const { log } = require('../log');
 const validate = require('jsonschema').validate;
 const { getConnection } = require('../db');
-const adminAuthenticator = require('./authenticator').adminAuthMiddleware;
-const optionalAuthenticator = require('./authenticator').optionalAuthMiddleware;
+const { adminAuthMiddleware, optionalAuthMiddleware } = require('./authenticator');
 const Point = require('../models/Point');
 const { isTokenAuthorized } = require('../util/userRoles');
 const User = require('../models/User');
 const { DEFAULT_CIRCLE_SIZE } = require('../models/Map');
 
 const router = express.Router();
-router.use(optionalAuthenticator);
+router.use(optionalAuthMiddleware);
 
 function formatMapForResponse(map) {
 	const formattedMap = {
@@ -78,7 +77,7 @@ router.get('/:map_id', async (req, res) => {
 	}
 });
 
-router.post('/create', adminAuthenticator('create maps'), async (req, res) => {
+router.post('/create', adminAuthMiddleware('create maps'), async (req, res) => {
 	const validMap = {
 		type: 'object',
 		additionalProperties: false,
@@ -191,7 +190,7 @@ router.post('/create', adminAuthenticator('create maps'), async (req, res) => {
 	}
 });
 
-router.post('/edit', adminAuthenticator('edit maps'), async (req, res) => {
+router.post('/edit', adminAuthMiddleware('edit maps'), async (req, res) => {
 	const validMap = {
 		type: 'object',
 		additionalProperties: false,
@@ -309,7 +308,7 @@ router.post('/edit', adminAuthenticator('edit maps'), async (req, res) => {
 	}
 });
 
-router.post('/delete', adminAuthenticator('delete maps'), async (req, res) => {
+router.post('/delete', adminAuthMiddleware('delete maps'), async (req, res) => {
 	const validParams = {
 		type: 'object',
 		maxProperties: 1,

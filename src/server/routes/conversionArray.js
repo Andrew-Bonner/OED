@@ -7,14 +7,14 @@ const { getConnection } = require('../db');
 const { redoCik } = require('../services/graph/redoCik');
 const { refreshAllReadingViews } = require('../services/refreshAllReadingViews');
 const validate = require('jsonschema').validate;
-const adminAuthenticator = require('./authenticator').adminAuthMiddleware;
+const { adminAuthMiddleware } = require('./authenticator');
 
 const router = express.Router();
 
 /**
  * Route for redoing Cik and/or refreshing reading views.
  */
-router.post('/refresh', adminAuthenticator('refresh conversion arrays'), async (req, res) => {
+router.post('/refresh', adminAuthMiddleware('refresh conversion arrays'), async (req, res) => {
 	const validParams = {
 		type: 'object',
 		additionalProperties: false,

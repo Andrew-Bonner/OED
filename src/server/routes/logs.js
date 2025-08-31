@@ -7,13 +7,13 @@
 const express = require('express');
 const { log } = require('../log');
 const validate = require('jsonschema').validate;
-const adminAuthenticator = require('./authenticator').adminAuthMiddleware;
+const { adminAuthMiddleware } = require('./authenticator');
 const LogMsg = require('../models/LogMsg');
 const { getConnection } = require('../db');
 const { TimeInterval } = require('../../common/TimeInterval');
 
 const router = express.Router();
-router.use(adminAuthenticator('log API'));
+router.use(adminAuthMiddleware('log API'));
 
 const validLog = {
 	type: 'object',
