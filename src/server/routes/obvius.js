@@ -28,6 +28,7 @@ const obvius = require('../util').obvius;
 const { obviusUsernameAndPasswordAuthMiddleware } = require('./authenticator');
 const { getConnection } = require('../db');
 const escapeHtml = require('escape-html');
+const { PASSWORD_MAX_LENGTH } = require('../util/validationConstants');
 
 const upload = multer({ 
 	storage: multer.memoryStorage(),
@@ -127,26 +128,18 @@ function verifyObviusUser(req, res, next) {
 
 	if (!password) {
 		failure(req, res, 'password parameter is required.');
-		return;
 	} else if (!username) {
 		failure(req, res, 'username parameter is required.');
-		return;
-	}
-	
-	// Basic parameter validation for security
-	if (typeof password !== 'string' || password.length > 1000) {
+	} else if (typeof password !== 'string' || password.length > PASSWORD_MAX_LENGTH) {
 		failure(req, res, 'Invalid password format.');
-		return;
-	}
-	if (typeof username !== 'string' || username.length > 254) {
+	} else if (typeof username !== 'string' || username.length > 254) {
 		failure(req, res, 'Invalid username format.');
-		return;
+	} else {
+		// Authenticate Obvius user after all validation passes.
+		req.body.username = username;
+		req.body.password = password;
+		obviusUsernameAndPasswordAuthMiddleware('Obvius pipeline')(req, res, next);
 	}
-	
-	// Authenticate Obvius user.
-	req.body.username = username;
-	req.body.password = password;
-	obviusUsernameAndPasswordAuthMiddleware('Obvius pipeline')(req, res, next);
 }
 
 
