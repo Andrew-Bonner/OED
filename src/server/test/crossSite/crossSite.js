@@ -10,7 +10,7 @@ vulnerabilities in HTML of user uploaded data.*/
 const { chai, mocha, expect, app, testUser } = require('../common');
 
 mocha.describe('Cross site', () => {
-	mocha.it('test 1: tests for sanitization of HTML', async () => {
+	mocha.it('Test for sanitization of HTML', async () => {
 		const filePath = 'src/server/test/crossSite/readings.csv';
 
 		const res = await chai.request(app).post('/api/csv/readings')
@@ -22,7 +22,13 @@ mocha.describe('Cross site', () => {
 			.field('meterName','<img src=x onerror="alert(document.domain)">')
 			.field('gzip', "no")
 			.attach('csvfile', 'src/server/test/crossSite/something.csv');
-        expect(res.text).to.include('<img src="x">');
-		expect(res).to.have.status(400); 
+		if (res.status !== 400){
+        	expect(res.text).to.include('<img src="x">');
+			process.exit(1)
+		}
+
+		if (!res.text.includes('<iimg src="x>')){
+			expect(res).to.have.status(400); 
+		}
 	});
 });

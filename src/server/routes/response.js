@@ -13,8 +13,8 @@ const DOMPurify = require('../services/utils/sanitizer');
  * @param {string} comment Any additional data to be returned to the client as a string.
  */
 function success(res, comment = '') {
-    const safeComment = DOMPurify.sanitize(comment);
-    res.status(200).send(safeComment);
+	const safeComment = DOMPurify.sanitize(comment);
+	res.status(200).send(safeComment);
 }
 
 /**
@@ -25,8 +25,8 @@ function success(res, comment = '') {
  * @param {string} comment Any additional data to be returned to the client as a string.
  */
 function failure(res, code = 500, comment = '') {
-    const safeComment = DOMPurify.sanitize(comment);
-    res.status(code).send(safeComment);
+	const safeComment = DOMPurify.sanitize(comment);
+	res.status(code).send(safeComment);
 }
 
 module.exports = { success, failure };
