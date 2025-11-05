@@ -1,0 +1,73 @@
+{
+  "User Routes": [
+    "/api/users/",
+    "/api/users/token",
+    "/api/users/:user_id",
+    "/api/users/create",
+    "/api/users/edit",
+    "/api/users/delete"
+  ],
+  "Authentication Routes": [
+    "/api/login",
+    "/api/verification"
+  ],
+  "Log Routes": [
+    "/api/logs/info",
+    "/api/logs/warn",
+    "/api/logs/error",
+    "/api/logs/logsmsg/getLogsByDateRangeAndType"
+  ],
+  "Group Routes": [
+    "/api/groups/idname",
+    "/api/groups/children/:group_id",
+    "/api/groups/deep/meters/:group_id",
+    "/api/groups/deep/groups/:group_id",
+    "/api/groups/create",
+    "/api/groups/edit"
+  ],
+  "Map Routes": [
+    "/api/maps",
+    "/api/maps/create",
+    "/api/maps/edit",
+    "/api/maps/delete",
+    "/api/maps/:map_id"
+  ],
+  "Meter Routes": [
+    "/api/meters",
+    "/api/meters/:meter_id",
+    "/api/meters/edit"
+  ],
+  "Unit Routes": [
+    "/api/units/",
+    "/api/units/edit",
+    "/api/units/addUnit",
+    "/api/units/delete"
+  ],
+  "Preference Routes": [
+    "/api/preferences/",
+    "/api/preferences/"
+  ],
+  "Conversion Routes": [
+    "/api/conversions/refresh"
+  ],
+  "CIK Routes": [
+    "/api/ciks/"
+  ],
+  "Baseline Routes": [
+    "/api/baselines/",
+    "/api/baselines/new"
+  ],
+  "Version Route": [
+    "/api/version"
+  ],
+  "Reading Routes": [
+    "/api/unitReadings/line",
+    "/api/unitReadings/bar",
+    "/api/unitReadings/threeD",
+    "/api/unitReadings/groupThreeD"
+  ],
+  "CSV Upload Routes": [
+    "/api/csv/readings",
+    "/api/csv/meters"
+  ]
+}
