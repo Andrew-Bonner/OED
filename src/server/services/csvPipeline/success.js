@@ -13,10 +13,9 @@ const DOMPurify = require('../utils/sanitizer');
  * @param {string} comment Any additional data to be returned to the client.
  */
 function success(req, res, comment = '') {
-    const safeComment = DOMPurify.sanitize(comment);
-    res.status(200).send(`<h1>SUCCESS</h1>${safeComment}`);
+	const safeComment = DOMPurify.sanitize(comment);
+	res.status(200).send(`<h1>SUCCESS</h1>${safeComment}`);
 }
-
 
 /**
  * Inform the client of a failure (400 OK) with sanitized HTML content.
@@ -26,9 +25,10 @@ function success(req, res, comment = '') {
  * @param {string} comment Any additional data to be returned to the client.
  */
 function failure(req, res, comment = '') {
-    const safeComment = DOMPurify.sanitize(comment);
-    // 400 is client error. There is a small chance the insert into the DB failed
-    // but overlooking that.
-    res.status(400).send(`<h1>FAILURE</h1>${safeComment}`);
+	const safeComment = DOMPurify.sanitize(comment);
+	// 400 is client error. There is a small chance the insert into the DB failed
+	// but overlooking that.
+	res.status(400).send(`<h1>FAILURE</h1>${safeComment}`);
 }
+
 module.exports = { success, failure };
