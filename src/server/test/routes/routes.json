@@ -1,0 +1,78 @@
+{
+  "adminAuthMiddleware": {
+    "GET": [
+      "/api/users/",
+      "/api/users/:user_id"
+    ],
+    "POST": [
+      "/api/conversion-array/refresh",
+      "/api/conversions/edit",
+      "/api/conversions/addConversion",
+      "/api/conversions/delete",
+      "/api/conversions/simulate-delete",
+      "/api/csv/meters",
+      "/api/csv/readings",
+      "/api/groups/create",
+      "/api/groups/delete",
+      "/api/locations/create",
+      "/api/locations/edit",
+      "/api/locations/delete",
+      "/api/meters/edit",
+      "/api/meters/addMeter",
+      "/api/units/edit",
+      "/api/units/addUnit",
+      "/api/units/delete",
+      "/api/users/create",
+      "/api/users/edit",
+      "/api/users/delete"
+    ],
+    "PUT": [
+      "/api/groups/edit"
+    ]
+  },
+  "notAdminProtected": {
+    "GET": [
+      "/api/baseline",
+      "/api/ciks",
+      "/api/compareReadings/meters/:meter_ids",
+      "/api/compareReadings/groups/:group_ids",
+      "/api/conversions/",
+      "/api/groups/",
+      "/api/groups/idname",
+      "/api/groups/children/:group_id",
+      "/api/groups/allChildren/",
+      "/api/groups/deep/groups/:group_id",
+      "/api/groups/deep/meters/:group_id",
+      "/api/groups/parents/:group_id",
+      "/api/logger/logsmsg/getLogsByDateRangeAndType",
+      "/api/locations/",
+      "/api/locations/:map_id",
+      "/api/meters/",
+      "/api/meters/:meter_id",
+      "/api/obvius/",
+      "/api/preferences/",
+      "/api/readings/line/count/meters/:meter_ids",
+      "/api/readings/line/raw/meter/:meter_id",
+      "/api/readings/line/meters/:meter_ids",
+      "/api/readings/line/groups/:group_ids",
+      "/api/readings/bar/meters/:meter_ids",
+      "/api/readings/bar/groups/:group_ids",
+      "/api/readings/radar/meters/:meter_ids",
+      "/api/readings/radar/groups/:group_ids",
+      "/api/readings/threeD/meters/:meter_ids",
+      "/api/readings/threeD/groups/:group_id",
+      "/api/units/",
+      "/api/users/token",
+      "/api/version/"
+    ],
+    "POST": [
+      "/api/baseline/new",
+      "/api/import/",
+      "/api/logger/info",
+      "/api/logger/warn",
+      "/api/logger/error",
+      "/api/preferences/",
+      "/api/verifyToken/"
+    ]
+  }
+}
