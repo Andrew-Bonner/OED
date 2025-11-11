@@ -6,7 +6,7 @@
 vulnerabilities in HTML of user uploaded data.*/
 
 /* Run in OED Docker web container terminal/shell: 
- npm run testsome src/server/test/crossSite/crossSite.js */
+npm run testsome src/server/test/crossSite/crossSite.js */
 const { chai, mocha, expect, app, testUser } = require('../common');
 
 mocha.describe('Cross site', () => {
@@ -22,13 +22,7 @@ mocha.describe('Cross site', () => {
 			.field('meterName','<img src=x onerror="alert(document.domain)">')
 			.field('gzip', "no")
 			.attach('csvfile', 'src/server/test/crossSite/something.csv');
-		if (res.status !== 400){
-        	expect(res.text).to.include('<img src="x">');
-			process.exit(1)
-		}
-
-		if (!res.text.includes('<iimg src="x>')){
-			expect(res).to.have.status(400); 
-		}
-	});
-});
+		expect(res).to.have.status(400);
+		expect(res.text).to.include('<img src="x">');
+	})
+})
