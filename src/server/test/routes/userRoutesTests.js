@@ -17,36 +17,36 @@ const { token } = require("morgan");
 
 const raw = fs.readFileSync("src/server/test/routes/routes.json", "utf8");
 const routeData = JSON.parse(raw);
-const users = [
-	new User(
-		undefined,
-		"adminuser",
-		await bcrypt.hash("admin321#", 10),
-		User.role.ADMIN
-	),
-	new User(
-		undefined,
-		"obviususer",
-		await bcrypt.hash("obvius321#", 10),
-		User.role.OBVIUS
-	),
-	new User(
-		undefined,
-		"csvuser",
-		await bcrypt.hash("csv321#", 10),
-		User.role.CSV
-	),
-	new User(
-		undefined,
-		"exportuser",
-		await bcrypt.hash("export321#", 10),
-		User.role.EXPORT
-	),
-];
 
-mocha.describe("roles other than admin accessing admin routes", () => {
+mocha.describe("roles other than admin accessing admin routes", async () => {
+	let users = [
+		new User(
+			undefined,
+			"adminuser",
+			await bcrypt.hash("admin321#", 10),
+			User.role.ADMIN
+		),
+		new User(
+			undefined,
+			"obviususer",
+			await bcrypt.hash("obvius321#", 10),
+			User.role.OBVIUS
+		),
+		new User(
+			undefined,
+			"csvuser",
+			await bcrypt.hash("csv321#", 10),
+			User.role.CSV
+		),
+		new User(
+			undefined,
+			"exportuser",
+			await bcrypt.hash("export321#", 10),
+			User.role.EXPORT
+		),
+	];
 	let token;
-	let res;
+
 	//next loop through each route in the json file based on the current format as of 11/18
 	for (const authType in routesData) {
 		const methods = routesData[authType];
@@ -68,10 +68,7 @@ mocha.describe("roles other than admin accessing admin routes", () => {
 					});
 					//admin tried route
 					mocha.it("admin tries " + route, async () => {
-						let res = await chai
-							.request(app)
-							.post("/api/conversions/addConversion")
-							.set("token", token);
+						let res = await chai.request(app).post(route).set("token", token);
 						expect(res).to.have.status(200);
 					});
 				});
