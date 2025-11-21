@@ -29,11 +29,25 @@ mocha.describe("different user types trying several", () => {
 	//try adminuser against the first route (splitting routes up first)
 	//for (let i = 0; i > 3; i++) {
 	mocha.it("logging in", async () => {
-		let res = await chai.request(app).post("/api/login").send({
-			username: testUser.username,
-			password: testUser.password,
+		const adminPassword = "admin321#";
+		const conn = testDB.getConnection();
+		const admin = new User(
+			undefined,
+			"adminuser",
+			await bcrypt.hash(adminPassword, 10),
+			User.role.ADMIN
+		);
+		await admin.insert(conn);
+		const res = await chai.request(app).post("/api/login").send({
+			username: admin.username,
+			password: adminPassword,
 		});
-		expect(res).to.have.status(200);
+		const token = res.body.token;
+		const res2 = await chai
+			.request(app)
+			.post("/api/conversion-array/refresh")
+			.set("token", token);
+		expect(res2).to.have.status(200);
 	});
 	//}
 
@@ -42,28 +56,14 @@ mocha.describe("different user types trying several", () => {
 	//}
 });
 class TestUsers {
-	constructor() {
-		this.users = {};
-	}
+	static admin;
 
-	static async addConnection(conn) {
-		await this.createUsers(
-			"ADMIN",
+	static async createUsers() {
+		this.admin = new User(
+			undefined,
 			"adminuser",
-			"admin321#",
-			User.role.ADMIN,
-			conn
+			await bcrypt.hash("admin321#", 10),
+			User.role.ADMIN
 		);
-	}
-
-	async createUsers(key, username, password, role, connection) {
-		const hash = await bcrypt.hash(password, 10);
-		const user = new User(undefined, username, hash, role);
-		await user.insert(conn);
-		this.users[key] = user;
-		return user;
-	}
-	static get(key) {
-		return this.users[key];
 	}
 }
