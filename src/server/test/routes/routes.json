@@ -9,7 +9,7 @@
     "POST": [
       "/api/logs/info",
       "/api/logs/warn",
-      "/api/logs/error", 
+      "/api/logs/error",
       "/api/conversion-array/refresh",
       "/api/conversions/edit",
       "/api/conversions/addConversion",

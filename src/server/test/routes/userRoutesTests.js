@@ -13,16 +13,20 @@ const fs = require("fs");
 const User = require("../../models/User");
 const Configfile = require("../../models/obvius/Configfile");
 const bcrypt = require("bcryptjs");
+<<<<<<< HEAD
 const sharedBody = { message: "test" };
 const sharedQuery = {
 	logLimit: 10,
 	timeInterval: "LAST_24_HOURS",
 	logTypes: "info",
 };
+=======
+>>>>>>> parent of 97504d50 (Start iterating through get and post routes)
 
 const raw = fs.readFileSync("src/server/test/routes/routes.json", "utf8");
 const routeData = JSON.parse(raw);
 
+<<<<<<< HEAD
 mocha.describe("Admin GET + POST route tests", () => {
 	const roles = ["ADMIN", "CSV", "EXPORT", "OBVIUS"];
 	for (let i = 0; i < roles.length; i++) {
@@ -174,6 +178,32 @@ mocha.describe("Admin GET + POST route tests", () => {
 	}
 });
 
+=======
+mocha.describe("different user types trying several", () => {
+	let token;
+	mocha.beforeEach("admin user logs in", async () => {
+		const conn = testDB.getConnection();
+
+		const adminUser = TestUsers.admin();
+		(await adminUser).insert(conn);
+		const res = await chai
+			.request(app)
+			.post("/api/login")
+			.send({
+				username: (await adminUser).username,
+				password: TestUsers.adminPassword,
+			});
+		token = res.body.token;
+	});
+	mocha.it("conversion-array refresh", async () => {
+		const res2 = await chai
+			.request(app)
+			.post("/api/conversion-array/refresh")
+			.set("token", token);
+		expect(res2).to.have.status(200);
+	});
+});
+>>>>>>> parent of 97504d50 (Start iterating through get and post routes)
 class TestUsers {
 	static adminPassword = "admin321#";
 	static csvPassword = "csv321#";
@@ -216,7 +246,10 @@ class TestUsers {
 		);
 	}
 }
+<<<<<<< HEAD
 
 function resolveParams(route) {
 	return route.replace(/:([A-Za-z_]+)/g, "1");
 }
+=======
+>>>>>>> parent of 97504d50 (Start iterating through get and post routes)
