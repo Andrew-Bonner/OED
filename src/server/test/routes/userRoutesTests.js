@@ -13,7 +13,7 @@ const sharedQuery = {
 const raw = fs.readFileSync("src/server/test/routes/routes.json", "utf8");
 const routeData = JSON.parse(raw);
 
-mocha.describe("Admin GET + POST route tests", () => {
+mocha.describe("Testing User Routes", () => {
 	mocha.describe("ADMIN TESTS", () => {
 		let token;
 		//admin user logs in
@@ -132,24 +132,93 @@ mocha.describe("Admin GET + POST route tests", () => {
 			token = res.body.token;
 		});
 		routeData.admin.GET.forEach((route) => {
-			mocha.it(`Pass ${route} shouldnt allow export`, async () => {
-				const url = resolveParams(route);
-				const req = chai
-					.request(app)
-					.get(url)
-					.set("token", token)
-					.query(sharedQuery);
-				const res = await req.send(sharedBody);
-				expect(res.status).to.be.oneOf([401, 403, 400]);
-			});
+			mocha.it(
+				`Admin GET Route: ${route} - shouldnt allow export`,
+				async () => {
+					const url = resolveParams(route);
+					const req = chai
+						.request(app)
+						.get(url)
+						.set("token", token)
+						.query(sharedQuery);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([401, 403, 400]);
+				}
+			);
 		});
 		routeData.admin.POST.forEach((route) => {
-			mocha.it("Pass " + route + "  shouldnt allow export", async () => {
-				const url = resolveParams(route);
-				const req = chai.request(app).post(url).set("token", token);
-				const res = await req.send(sharedBody);
-				expect(res.status).to.be.oneOf([400, 403, 401]);
-			});
+			mocha.it(
+				"Admin POST Route: " + route + " - shouldnt allow export",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([400, 403, 401]);
+				}
+			);
+		});
+		//testing optional auth routes
+		routeData.Optional.GET.forEach((route) => {
+			mocha.it(
+				"Optional GET Route: " + route + " - should allow export",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai
+						.request(app)
+						.get(url)
+						.set("token", token)
+						.query(sharedQuery);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([400, 202, 200]);
+				}
+			);
+		});
+		//User route
+		routeData.User.POST.forEach((route) => {
+			mocha.it(
+				"User POST Route: " + route + " - should allow export",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//obvius routes
+		routeData.Obvius.ALL.forEach((route) => {
+			mocha.it(
+				"Obvius ALL Route: " + route + " - should allow export",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//Unauthenticated User Routes
+		routeData.UnauthenticatedUser.GET.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow export",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		routeData.UnauthenticatedUser.POST.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow export",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
 		});
 	});
 	mocha.describe("OBVIUS TESTS", () => {
@@ -168,25 +237,94 @@ mocha.describe("Admin GET + POST route tests", () => {
 			token = res.body.token;
 		});
 		routeData.admin.GET.forEach((route) => {
-			mocha.it(`Pass ${route} shouldnt allow obvius`, async () => {
-				const url = resolveParams(route);
-				const req = chai
-					.request(app)
-					.get(url)
-					.set("token", token)
-					.query(sharedQuery);
-				const res = await req.send(sharedBody);
-				expect(res.status).to.be.oneOf([401, 403, 400]);
-			});
+			mocha.it(
+				`Admin GET Route: ${route} - shouldnt allow obvius`,
+				async () => {
+					const url = resolveParams(route);
+					const req = chai
+						.request(app)
+						.get(url)
+						.set("token", token)
+						.query(sharedQuery);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([401, 403, 400]);
+				}
+			);
 		});
 
 		routeData.admin.POST.forEach((route) => {
-			mocha.it(`Pass ${route} shouldnt allow obvius`, async () => {
-				const url = resolveParams(route);
-				const req = chai.request(app).post(url).set("token", token);
-				const res = await req.send(sharedBody);
-				expect(res.status).to.be.oneOf([400, 403, 401]);
-			});
+			mocha.it(
+				`Admin POST Route: ${route} - shouldnt allow obvius`,
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([400, 403, 401]);
+				}
+			);
+		});
+		//testing optional auth routes
+		routeData.Optional.GET.forEach((route) => {
+			mocha.it(
+				"Optional GET Route: " + route + " - should allow obvius",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai
+						.request(app)
+						.get(url)
+						.set("token", token)
+						.query(sharedQuery);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([400, 202, 200]);
+				}
+			);
+		});
+		//User route
+		routeData.User.POST.forEach((route) => {
+			mocha.it(
+				"User POST Route: " + route + " - should allow obvius",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//obvius routes
+		routeData.Obvius.ALL.forEach((route) => {
+			mocha.it(
+				"Obvius ALL Route: " + route + " - should allow obvius",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//Unauthenticated User Routes
+		routeData.UnauthenticatedUser.GET.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow obvius",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		routeData.UnauthenticatedUser.POST.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow obvius",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
 		});
 	});
 	mocha.describe("CSV TESTS", () => {
@@ -205,7 +343,7 @@ mocha.describe("Admin GET + POST route tests", () => {
 			token = res.body.token;
 		});
 		routeData.admin.GET.forEach((route) => {
-			mocha.it(`Pass ${route} shouldnt allow csv`, async () => {
+			mocha.it(`Admin GET Route: ${route} - shouldnt allow csv`, async () => {
 				const url = resolveParams(route);
 				const req = chai
 					.request(app)
@@ -218,15 +356,80 @@ mocha.describe("Admin GET + POST route tests", () => {
 		});
 
 		routeData.admin.POST.forEach((route) => {
-			mocha.it(`Pass ${route} shouldnt allow csv`, async () => {
+			mocha.it(`Admin POST Route: ${route} - shouldnt allow csv`, async () => {
 				const url = resolveParams(route);
 				const req = chai.request(app).post(url).set("token", token);
 				const res = await req.send(sharedBody);
 				expect(res.status).to.be.oneOf([400, 403, 401]);
 			});
 		});
+
+		//testing optional auth routes
+		routeData.Optional.GET.forEach((route) => {
+			mocha.it(
+				"Optional GET Route: " + route + " - should allow csv",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai
+						.request(app)
+						.get(url)
+						.set("token", token)
+						.query(sharedQuery);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([400, 202, 200]);
+				}
+			);
+		});
+		//User route
+		routeData.User.POST.forEach((route) => {
+			mocha.it(
+				"User POST Route: " + route + " - should allow csv",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//obvius routes
+		routeData.Obvius.ALL.forEach((route) => {
+			mocha.it(
+				"Obvius ALL Route: " + route + " - should allow csv",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//Unauthenticated User Routes
+		routeData.UnauthenticatedUser.GET.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow csv",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		routeData.UnauthenticatedUser.POST.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow csv",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
 	});
 });
+//user object class
 class TestUsers {
 	static adminPassword = "admin321#";
 	static csvPassword = "csv321#";
@@ -244,7 +447,7 @@ class TestUsers {
 
 	static async csv() {
 		return new User(
-			1,
+			undefined,
 			"acsvuser",
 			await bcrypt.hash(this.csvPassword, 10),
 			User.role.CSV
