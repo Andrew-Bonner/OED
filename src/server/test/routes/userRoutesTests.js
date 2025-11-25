@@ -1,17 +1,7 @@
-const {
-	chai,
-	mocha,
-	expect,
-	app,
-	testDB,
-	testUser,
-	recreateDB,
-	// SHL: OED requires single quotes. If you have your VSC setup as recommended it would show.
-} = require("../common");
+const { chai, mocha, expect, app, testDB } = require("../common");
 const fs = require("fs");
 
 const User = require("../../models/User");
-const Configfile = require("../../models/obvius/Configfile");
 const bcrypt = require("bcryptjs");
 
 const sharedBody = { message: "test" };
@@ -26,6 +16,7 @@ const routeData = JSON.parse(raw);
 mocha.describe("Admin GET + POST route tests", () => {
 	mocha.describe("ADMIN TESTS", () => {
 		let token;
+		//admin user logs in
 		mocha.beforeEach("admin user logs in", async () => {
 			const conn = testDB.getConnection();
 			const user = TestUsers.admin();
@@ -39,8 +30,9 @@ mocha.describe("Admin GET + POST route tests", () => {
 				});
 			token = res.body.token;
 		});
+		//testing admin auth routes
 		routeData.admin.GET.forEach((route) => {
-			mocha.it(`Pass ${route} should allow admin`, async () => {
+			mocha.it(`Admin GET Route: ${route} - should allow admin`, async () => {
 				const url = resolveParams(route);
 				const req = chai
 					.request(app)
@@ -53,12 +45,75 @@ mocha.describe("Admin GET + POST route tests", () => {
 		});
 
 		routeData.admin.POST.forEach((route) => {
-			mocha.it(`Pass ${route} should allow admin`, async () => {
+			mocha.it(`Admin POST Route: ${route} - should allow admin`, async () => {
 				const url = resolveParams(route);
 				const req = chai.request(app).post(url).set("token", token);
 				const res = await req.send(sharedBody);
 				expect(res.status).to.be.oneOf([200, 400, 202]);
 			});
+		});
+		//testing optional auth routes
+		routeData.Optional.GET.forEach((route) => {
+			mocha.it(
+				"Optional GET Route: " + route + " - should allow admin",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai
+						.request(app)
+						.get(url)
+						.set("token", token)
+						.query(sharedQuery);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([400, 202, 200]);
+				}
+			);
+		});
+		//User route
+		routeData.User.POST.forEach((route) => {
+			mocha.it(
+				"User POST Route: " + route + " - should allow admin",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//obvius routes
+		routeData.Obvius.ALL.forEach((route) => {
+			mocha.it(
+				"Obvius ALL Route: " + route + " - should allow admin",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		//Unauthenticated User Routes
+		routeData.UnauthenticatedUser.GET.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow admin",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
+		});
+		routeData.UnauthenticatedUser.POST.forEach((route) => {
+			mocha.it(
+				"Unauthenticated User GET Route: " + route + " - should allow admin",
+				async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				}
+			);
 		});
 	});
 	mocha.describe("EXPORT TESTS", () => {
@@ -88,9 +143,8 @@ mocha.describe("Admin GET + POST route tests", () => {
 				expect(res.status).to.be.oneOf([401, 403, 400]);
 			});
 		});
-
 		routeData.admin.POST.forEach((route) => {
-			mocha.it(`Pass ${route} shouldnt allow export`, async () => {
+			mocha.it("Pass " + route + "  shouldnt allow export", async () => {
 				const url = resolveParams(route);
 				const req = chai.request(app).post(url).set("token", token);
 				const res = await req.send(sharedBody);
@@ -191,7 +245,7 @@ class TestUsers {
 	static async csv() {
 		return new User(
 			1,
-			"csvuser",
+			"acsvuser",
 			await bcrypt.hash(this.csvPassword, 10),
 			User.role.CSV
 		);
