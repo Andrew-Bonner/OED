@@ -1,9 +1,7 @@
 const { chai, mocha, expect, app, testDB } = require("../common");
 const fs = require("fs");
-
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
-
 const sharedBody = { message: "test" };
 const sharedQuery = {
 	logLimit: 10,
@@ -142,7 +140,7 @@ mocha.describe("Testing User Routes", () => {
 						.set("token", token)
 						.query(sharedQuery);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([401, 403, 400]);
+					expect(res.status).to.be.oneOf([401, 403]);
 				}
 			);
 		});
@@ -153,7 +151,7 @@ mocha.describe("Testing User Routes", () => {
 					const url = resolveParams(route);
 					const req = chai.request(app).post(url).set("token", token);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([400, 403, 401]);
+					expect(res.status).to.be.oneOf([403, 401]);
 				}
 			);
 		});
@@ -247,7 +245,7 @@ mocha.describe("Testing User Routes", () => {
 						.set("token", token)
 						.query(sharedQuery);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([401, 403, 400]);
+					expect(res.status).to.be.oneOf([401, 403]);
 				}
 			);
 		});
@@ -259,7 +257,7 @@ mocha.describe("Testing User Routes", () => {
 					const url = resolveParams(route);
 					const req = chai.request(app).post(url).set("token", token);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([400, 403, 401]);
+					expect(res.status).to.be.oneOf([403, 401]);
 				}
 			);
 		});
@@ -351,7 +349,7 @@ mocha.describe("Testing User Routes", () => {
 					.set("token", token)
 					.query(sharedQuery);
 				const res = await req.send(sharedBody);
-				expect(res.status).to.be.oneOf([401, 403, 400]);
+				expect(res.status).to.be.oneOf([401, 403]);
 			});
 		});
 
@@ -360,7 +358,7 @@ mocha.describe("Testing User Routes", () => {
 				const url = resolveParams(route);
 				const req = chai.request(app).post(url).set("token", token);
 				const res = await req.send(sharedBody);
-				expect(res.status).to.be.oneOf([400, 403, 401]);
+				expect(res.status).to.be.oneOf([403, 401]);
 			});
 		});
 
@@ -453,7 +451,6 @@ class TestUsers {
 			User.role.CSV
 		);
 	}
-
 	static async export() {
 		return new User(
 			undefined,
@@ -462,7 +459,6 @@ class TestUsers {
 			User.role.EXPORT
 		);
 	}
-
 	static async obvius() {
 		return new User(
 			undefined,
