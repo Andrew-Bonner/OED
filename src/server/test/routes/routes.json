@@ -3,10 +3,10 @@
     "GET": [
       "/api/users/",
       "/api/users/:user_id",
-      "/api/logs/logsmsg/getLogsByDateRangeAndType",
       "/api/preferences/"
     ],
     "POST": [
+      "/api/preferences/",
       "/api/logs/info",
       "/api/logs/warn",
       "/api/logs/error", 
@@ -31,6 +31,9 @@
     ],
     "PUT": [
       "/api/groups/edit"
+    ],
+    "Special":[
+      "/api/logs/logsmsg/getLogsByDateRangeAndType"
     ]
   },
   
