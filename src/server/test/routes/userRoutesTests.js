@@ -369,7 +369,7 @@ mocha.describe("Testing User Routes", () => {
 			routeData.UnauthenticatedUser.GET.forEach((route) => {
 				mocha.it("GET " + route + " - should allow csv", async () => {
 					const url = resolveParams(route);
-					const req = chai.request(app).post(url).set("token", token);
+					const req = chai.request(app).get(url).set("token", token);
 					const res = await req.send(sharedBody);
 					expect(res.status).to.be.oneOf([200, 400, 202]);
 				});
