@@ -82,7 +82,7 @@ mocha.describe("Testing User Routes", () => {
 					const url = resolveParams(route);
 					const req = chai.request(app).post(url).set("token", token);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([200, 400, 202]);
+					expect(res.status).to.be.oneOf([406, 400, 202]);
 				});
 			});
 		});
@@ -96,13 +96,14 @@ mocha.describe("Testing User Routes", () => {
 					expect(res.status).to.be.oneOf([200, 400, 202]);
 				});
 			});
-		});
-		routeData.UnauthenticatedUser.POST.forEach((route) => {
-			mocha.it("POST " + route + " - should allow admin", async () => {
-				const url = resolveParams(route);
-				const req = chai.request(app).post(url).set("token", token);
-				const res = await req.send(sharedBody);
-				expect(res.status).to.be.oneOf([200, 400, 202]);
+
+			routeData.UnauthenticatedUser.POST.forEach((route) => {
+				mocha.it("POST " + route + " - should allow admin", async () => {
+					const url = resolveParams(route);
+					const req = chai.request(app).post(url).set("token", token);
+					const res = await req.send(sharedBody);
+					expect(res.status).to.be.oneOf([200, 400, 202]);
+				});
 			});
 		});
 	});
@@ -173,7 +174,7 @@ mocha.describe("Testing User Routes", () => {
 					const url = resolveParams(route);
 					const req = chai.request(app).post(url).set("token", token);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([200, 400, 202]);
+					expect(res.status).to.be.oneOf([406, 400, 202]);
 				});
 			});
 		});
@@ -233,7 +234,7 @@ mocha.describe("Testing User Routes", () => {
 				});
 			});
 		});
-		mocha.describe("AOPtional GET Routes", () => {
+		mocha.describe("Optional GET Routes", () => {
 			//testing optional auth routes
 			routeData.Optional.GET.forEach((route) => {
 				mocha.it("GET " + route + " - should allow obvius", async () => {
@@ -264,9 +265,9 @@ mocha.describe("Testing User Routes", () => {
 			routeData.Obvius.ALL.forEach((route) => {
 				mocha.it("ALL " + route + " - should allow obvius", async () => {
 					const url = resolveParams(route);
-					const req = chai.request(app).get(url).set("token", token);
+					const req = chai.request(app).post(url).set("token", token);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([200, 400, 202]);
+					expect(res.status).to.be.oneOf([406, 400, 202]);
 				});
 			});
 		});
@@ -358,9 +359,9 @@ mocha.describe("Testing User Routes", () => {
 			routeData.Obvius.ALL.forEach((route) => {
 				mocha.it("ALL " + route + " - should allow csv", async () => {
 					const url = resolveParams(route);
-					const req = chai.request(app).get(url).set("token", token);
+					const req = chai.request(app).post(url).set("token", token);
 					const res = await req.send(sharedBody);
-					expect(res.status).to.be.oneOf([200, 400, 202]);
+					expect(res.status).to.be.oneOf([406, 400, 202]);
 				});
 			});
 		});

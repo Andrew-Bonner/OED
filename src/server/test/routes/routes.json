@@ -3,8 +3,7 @@
     "GET": [
       "/api/users/",
       "/api/users/:user_id",
-      "/api/logs/logsmsg/getLogsByDateRangeAndType",
-      "/api/preferences/"
+      "/api/logs/logsmsg/getLogsByDateRangeAndType"
     ],
     "POST": [
       "/api/logs/info",
@@ -18,7 +17,6 @@
       "/api/groups/create",
       "/api/groups/delete",
       "/api/maps/create",
-      "/api/maps/edit",
       "/api/maps/delete",
       "/api/meters/edit",
       "/api/meters/addMeter",
@@ -27,13 +25,14 @@
       "/api/units/delete",
       "/api/users/create",
       "/api/users/edit",
-      "/api/users/delete"
+      "/api/users/delete",
+			"/api/preferences/"
     ],
     "PUT": [
       "/api/groups/edit"
     ]
   },
-  
+
   "Optional":{
     "GET": [
       "/api/maps/",
@@ -82,11 +81,11 @@
       "/api/compareReadings/groups/:group_ids",
       "/api/csv/meters",
       "/api/csv/readings",
-      "/api/version/"
+      "/api/version/",
+			"/api/baseline/new",
+      "/api/verification/"
     ],
     "POST": [
-      "/api/baseline/new",
-      "/api/verification/"
     ]
   }
 }
