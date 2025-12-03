@@ -84,8 +84,6 @@
       "/api/version/",
 			"/api/baseline/new",
       "/api/verification/"
-    ],
-    "POST": [
     ]
   }
 }
