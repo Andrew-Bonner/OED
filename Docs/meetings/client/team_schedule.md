@@ -4,7 +4,7 @@ Meeting Times:
 
 Mentor Meeting Times: 
 1. Wednesdays, 12:00pm
-2. Backup: Mondays, 5:00pm
+2. Backup: Mondays, 3:00pm
 
 Final Semester 1 Presnetation Date:
 - Tuesday, December 9th, 2025
