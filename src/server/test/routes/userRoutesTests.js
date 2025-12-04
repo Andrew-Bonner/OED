@@ -16,7 +16,7 @@ routes can each user access. The routes.json file holds all of the routes along 
 of authentication they have */
 
 mocha.describe('Testing User Routes', () => {
-	//First series of tests are for admin users against all of the routes in the routes.json
+	//ADMIN USER TESTS
 	mocha.describe('ADMIN USER', () => {
 		//token value made outside of all test so it can be resued after being defined
 		let token;
@@ -43,7 +43,7 @@ mocha.describe('Testing User Routes', () => {
 						.set('token', token)
 						.query(sharedQuery);
 					const res = await req.send(sharedBody);
-					//status code 400,202,or 200 is considered a pass an a route was accessed
+					//status code 400, 202, or 200 is considered a pass an a route was accessed
 					expect(res.status).to.be.oneOf([400, 202, 200]);
 				});
 			});
@@ -112,7 +112,7 @@ mocha.describe('Testing User Routes', () => {
 			});
 		});
 	});
-
+	//EXPORT USER TEST
 	mocha.describe('EXPORT USER', () => {
 		//create a new token variable for seperate user
 		let token;
@@ -210,9 +210,11 @@ mocha.describe('Testing User Routes', () => {
 			});
 		});
 	});
-
+	//OBVIUS USER TESTS
 	mocha.describe('OBVIUS USER', () => {
+		//new token variable created for this series of tests
 		let token;
+		//log in as obvius user before each route
 		mocha.beforeEach('obvius user logs in', async () => {
 			const conn = testDB.getConnection();
 			const user = await TestUsers.obvius();
@@ -223,7 +225,7 @@ mocha.describe('Testing User Routes', () => {
 			});
 			token = res.body.token;
 		});
-
+		//obvius user against admin auth routes
 		mocha.describe('Admin Auth GET + POST Routes', () => {
 			routeData.admin.GET.forEach((route) => {
 				mocha.it(`GET ${route} - shouldnt allow obvius`, async () => {
@@ -234,9 +236,11 @@ mocha.describe('Testing User Routes', () => {
 						.set('token', token)
 						.query(sharedQuery);
 					const res = await req.send(sharedBody);
+					//user should be forbiden acces with either a 401 or 403
 					expect(res.status).to.be.oneOf([401, 403]);
 				});
 			});
+
 
 			routeData.admin.POST.forEach((route) => {
 				mocha.it(`POST ${route} - shouldnt allow obvius`, async () => {
@@ -247,7 +251,7 @@ mocha.describe('Testing User Routes', () => {
 				});
 			});
 		});
-
+		//test for optional auth routes
 		mocha.describe('Optional Auth GET Routes', () => {
 			routeData.Optional.GET.forEach((route) => {
 				mocha.it('GET ' + route + ' - should allow obvius', async () => {
@@ -258,47 +262,55 @@ mocha.describe('Testing User Routes', () => {
 						.set('token', token)
 						.query(sharedQuery);
 					const res = await req.send(sharedBody);
+					//should pass with either a 400, 500, 202, and 200
 					expect(res.status).to.be.oneOf([400, 202, 200, 500]);
 				});
 			});
 		});
-
+		//login user route
 		mocha.describe('User Auth POST Routes', () => {
 			routeData.User.POST.forEach((route) => {
 				mocha.it('POST ' + route + ' - should allow obvius', async () => {
 					const url = resolveParams(route);
 					const req = chai.request(app).post(url).set('token', token);
 					const res = await req.send(sharedBody);
+					//should pass with a 200, might return 400 because user in already logged before testing route
 					expect(res.status).to.be.oneOf([200, 400, 202]);
 				});
 			});
 		});
 
+		//obvius route for obvius user
 		mocha.describe('Obvius Auth ALL Route', () => {
 			routeData.Obvius.ALL.forEach((route) => {
 				mocha.it('ALL ' + route + ' - should allow obvius', async () => {
 					const url = resolveParams(route);
 					const req = chai.request(app).post(url).set('token', token);
 					const res = await req.send(sharedBody);
+					//should pass with a 406, 400 or 200
 					expect(res.status).to.be.oneOf([406, 400, 202]);
 				});
 			});
 		});
 
+		//unauthenticed routes for obvius user
 		mocha.describe('Unauthenticated User GET Routes', () => {
 			routeData.UnauthenticatedUser.GET.forEach((route) => {
 				mocha.it('GET ' + route + ' - should allow obvius', async () => {
 					const url = resolveParams(route);
 					const req = chai.request(app).get(url).set('token', token);
 					const res = await req.send(sharedBody);
+					//should pass with a 200, 400, or 202
 					expect(res.status).to.be.oneOf([200, 400, 202]);
 				});
 			});
 		});
 	});
-
+	//CSV USER TESTS
 	mocha.describe('CSV USER', () => {
+		//new token variablels for a seperate user
 		let token;
+		//login iwht a new user for each route
 		mocha.beforeEach('csv user logs in', async () => {
 			const conn = testDB.getConnection();
 			const user = await TestUsers.csv();
@@ -309,7 +321,7 @@ mocha.describe('Testing User Routes', () => {
 			});
 			token = res.body.token;
 		});
-
+		//csv user trying admin routes - should all forbid access with a 401 or 403
 		mocha.describe('Admin Auth GET + POST Routes', () => {
 			routeData.admin.GET.forEach((route) => {
 				mocha.it(`GET ${route} - shouldnt allow csv`, async () => {
@@ -334,6 +346,7 @@ mocha.describe('Testing User Routes', () => {
 			});
 		});
 
+		//csv user for optional auth routes
 		mocha.describe('Optional Auth GET Routes', () => {
 			routeData.Optional.GET.forEach((route) => {
 				mocha.it('GET ' + route + ' - should allow csv', async () => {
@@ -348,7 +361,7 @@ mocha.describe('Testing User Routes', () => {
 				});
 			});
 		});
-
+		//user should login - will return a 400 because user is already logged in
 		mocha.describe('User Auth POST Routes', () => {
 			routeData.User.POST.forEach((route) => {
 				mocha.it('POST ' + route + ' - should allow csv', async () => {
@@ -359,7 +372,7 @@ mocha.describe('Testing User Routes', () => {
 				});
 			});
 		});
-
+		//s=csv user logged in with a 406
 		mocha.describe('Obvius Auth ALL Route', () => {
 			routeData.Obvius.ALL.forEach((route) => {
 				mocha.it('ALL ' + route + ' - should allow csv', async () => {
@@ -370,7 +383,7 @@ mocha.describe('Testing User Routes', () => {
 				});
 			});
 		});
-
+		//csv user tries unauthenticated route
 		mocha.describe('Unauthenticated User GET Routes', () => {
 			routeData.UnauthenticatedUser.GET.forEach((route) => {
 				mocha.it('GET ' + route + ' - should allow csv', async () => {
@@ -383,7 +396,8 @@ mocha.describe('Testing User Routes', () => {
 		});
 	});
 });
-
+/*This class was made to to hold the user instances as objects - this was to create speration of credentials from the code so it
+is easier to create, edit, and change*/
 class TestUsers {
 	static adminPassword = 'admin321#';
 	static csvPassword = 'csv4321#';
