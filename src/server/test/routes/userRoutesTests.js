@@ -236,7 +236,7 @@ mocha.describe('Testing User Routes', () => {
 						.set('token', token)
 						.query(sharedQuery);
 					const res = await req.send(sharedBody);
-					//user should be forbiden acces with either a 401 or 403
+					//user should be forbiden access with either a 401 or 403
 					expect(res.status).to.be.oneOf([401, 403]);
 				});
 			});
@@ -441,6 +441,7 @@ class TestUsers {
 	}
 }
 
+//the regex is giving that route an id to resolve some of the parameter requirements
 function resolveParams(route) {
 	return route.replace(/:([A-Za-z_]+)/g, '1');
 }
