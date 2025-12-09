@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* This file tests the functionality of the DOMPurify library. It tests for XSS 
+/* This file tests the functionality of the DOMPurify library. It tests for XSS
 vulnerabilities in HTML of user uploaded data.*/
 
-/* Run in OED Docker web container terminal/shell: 
+/* Run in OED Docker web container terminal/shell:
 npm run testsome src/server/test/crossSite/crossSite.js */
 const { chai, mocha, expect, app, testUser } = require('../common');
 
@@ -21,7 +21,7 @@ mocha.describe('Cross site', () => {
 			res.text:  <h1>FAILURE</h1>CSVPipelineError:
 			User Error: Meter with name '<img src="x">' not found.
 			*/
-			.field('meterName','<img src=x onerror="alert(document.domain)">')
+			.field('meterName', '<img src=x onerror="alert(document.domain)">')
 			.field('gzip', "no")
 			.attach('csvfile', 'src/server/test/crossSite/something.csv');
 
@@ -51,7 +51,7 @@ mocha.describe('Cross site', () => {
 				username: '<img src=x onerror="alert(1)">',
 				password: 'password123'
 			});
-		expect(res).to.have.status(400, 401);
+		expect(res).to.have.status(401);
 
 		const xssIndicators = [
 			'onerror',
@@ -63,7 +63,7 @@ mocha.describe('Cross site', () => {
 			'onclick',
 			'<iframe'
 		];
-	
+
 		xssIndicators.forEach(indicator => {
 			expect(res.text, `Output should not contain ${indicator}`).to.not.include(indicator);
 		});
