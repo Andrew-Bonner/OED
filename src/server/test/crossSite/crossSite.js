@@ -10,19 +10,62 @@ npm run testsome src/server/test/crossSite/crossSite.js */
 const { chai, mocha, expect, app, testUser } = require('../common');
 
 mocha.describe('Cross site', () => {
+
 	mocha.it('Test for sanitization of HTML', async () => {
 		const filePath = 'src/server/test/crossSite/readings.csv';
 
 		const res = await chai.request(app).post('/api/csv/readings')
 			.field('email', testUser.username)
 			.field('password', testUser.password)
-			/* This next line should produce: 
-			res.text:  <h1>FAILURE</h1>CSVPipelineError: 
-			User Error: Meter with name '<img src="x">' not found. */
+			/* This next line should produce:
+			res.text:  <h1>FAILURE</h1>CSVPipelineError:
+			User Error: Meter with name '<img src="x">' not found.
+			*/
 			.field('meterName','<img src=x onerror="alert(document.domain)">')
 			.field('gzip', "no")
 			.attach('csvfile', 'src/server/test/crossSite/something.csv');
+
 		expect(res).to.have.status(400);
 		expect(res.text).to.include('<img src="x">');
-	})
-})
+
+		const xssIndicators = [
+			'onerror',
+			'alert',
+			'document.domain',
+			'<script',
+			'javascript:',
+			'onload',
+			'onclick',
+			'<iframe'
+		];
+
+		xssIndicators.forEach(indicator => {
+			expect(res.text, `Output should not contain ${indicator}`).to.not.include(indicator);
+		});
+	});
+
+	mocha.it('Test for sanitization of login HTML in username', async () => {
+		const res = await chai.request(app)
+			.post('/api/login')
+			.send({
+				username: '<img src=x onerror="alert(1)">',
+				password: 'password123'
+			});
+		expect(res).to.have.status(400, 401);
+
+		const xssIndicators = [
+			'onerror',
+			'alert',
+			'document.domain',
+			'<script',
+			'javascript:',
+			'onload',
+			'onclick',
+			'<iframe'
+		];
+	
+		xssIndicators.forEach(indicator => {
+			expect(res.text, `Output should not contain ${indicator}`).to.not.include(indicator);
+		});
+	});
+});
