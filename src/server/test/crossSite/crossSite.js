@@ -8,9 +8,19 @@ vulnerabilities in HTML of user uploaded data.*/
 /* Run in OED Docker web container terminal/shell:
 npm run testsome src/server/test/crossSite/crossSite.js */
 const { chai, mocha, expect, app, testUser } = require('../common');
+const xssIndicators = [
+	'onerror',
+	'alert',
+	'document.domain',
+	'<script',
+	'javascript:',
+	'onload',
+	'onclick',
+	'<iframe'
+];
 
 mocha.describe('Cross site', () => {
-
+	
 	mocha.it('Test for sanitization of HTML', async () => {
 		const filePath = 'src/server/test/crossSite/readings.csv';
 
@@ -28,17 +38,6 @@ mocha.describe('Cross site', () => {
 		expect(res).to.have.status(400);
 		expect(res.text).to.include('<img src="x">');
 
-		const xssIndicators = [
-			'onerror',
-			'alert',
-			'document.domain',
-			'<script',
-			'javascript:',
-			'onload',
-			'onclick',
-			'<iframe'
-		];
-
 		xssIndicators.forEach(indicator => {
 			expect(res.text, `Output should not contain ${indicator}`).to.not.include(indicator);
 		});
@@ -52,17 +51,6 @@ mocha.describe('Cross site', () => {
 				password: 'password123'
 			});
 		expect(res).to.have.status(401);
-
-		const xssIndicators = [
-			'onerror',
-			'alert',
-			'document.domain',
-			'<script',
-			'javascript:',
-			'onload',
-			'onclick',
-			'<iframe'
-		];
 
 		xssIndicators.forEach(indicator => {
 			expect(res.text, `Output should not contain ${indicator}`).to.not.include(indicator);
