@@ -1,5 +1,8 @@
 const { chai, mocha, expect, app, testDB } = require('../common');
 const fs = require('fs');
+const assert = require("assert");
+const path = require("path");
+const { execFileSync } = require("child_process");
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const sharedBody = { message: 'test' };
@@ -10,12 +13,53 @@ const sharedQuery = {
 };
 const raw = fs.readFileSync('src/server/test/routes/routes.json', 'utf8');
 const routeData = JSON.parse(raw);
+const PROJECT_ROOT = path.resolve(__dirname, "../../.."); // src/server
+
 
 /*This test is built to test the integrity of the standing auth middleware on routes along with the what
 routes can each user access. The routes.json file holds all of the routes along with the different types
 of authentication they have */
 
 mocha.describe('Testing User Routes', () => {
+
+	/*right here will be a router validation check to make sure every route is actually being 
+	included in the test */
+	mocha.describe('Check to make sure all routes have been included', () => {
+		mocha.it("all routes in routes.json exist in the codebase", () => {
+			if (!fs.existsSync(PROJECT_ROOT)) {
+				throw new Error(`PROJECT_ROOT not found: ${PROJECT_ROOT}`);
+			}
+			if (!fs.existsSync(ROUTES_JSON)) {
+				throw new Error(`routes.json not found: ${ROUTES_JSON}`);
+			}
+
+			const expected = loadExpectedPaths();
+			const missing = [];
+
+			for (const p of expected) {
+				// allow either exact path or stripped /api variant
+				const exactOk = grepHasRoute(p);
+				const stripped = pathForGrep(p);
+				const strippedOk = stripped && stripped !== p ? grepHasRoute(stripped) : false;
+
+				if (!exactOk && !strippedOk) missing.push(p);
+			}
+
+			if (missing.length) {
+				missing.sort();
+				assert.fail(
+					[
+						"Routes in routes.json not found in code (method ignored):",
+						...missing.map((m) => `  - ${m}`),
+						"",
+						"Note: grep is static; mounted prefixes and dynamic routes may not match.",
+					].join("\n")
+				);
+			}
+		});
+
+	});
+
 	//ADMIN USER TESTS
 	mocha.describe('ADMIN USER', () => {
 		//token value made outside of all test so it can be resued after being defined
@@ -445,3 +489,106 @@ class TestUsers {
 function resolveParams(route) {
 	return route.replace(/:([A-Za-z_]+)/g, '1');
 }
+
+const STRIP_API_PREFIX_FOR_GREP = true;
+const API_PREFIX = "/api";
+
+function normalizePath(p) {
+	if (typeof p !== "string") return null;
+	let s = p.trim();
+	if (!s) return null;
+	s = s.split("?")[0];
+	if (!s.startsWith("/")) s = "/" + s;
+	if (s.length > 1) s = s.replace(/\/+$/, "");
+	return s;
+}
+
+function pathForGrep(p) {
+	let s = normalizePath(p);
+	if (!s) return null;
+	if (STRIP_API_PREFIX_FOR_GREP && s.startsWith(API_PREFIX + "/")) {
+		s = s.slice(API_PREFIX.length);
+		if (!s.startsWith("/")) s = "/" + s;
+	}
+	return s;
+}
+
+function expressPathToRegex(p) {
+	const s = normalizePath(p);
+	if (!s) return null;
+	return s.replace(/:([A-Za-z0-9_]+)/g, "[^/]+");
+}
+
+function loadExpectedPaths() {
+	const raw = fs.readFileSync(ROUTES_JSON, "utf8");
+	const doc = JSON.parse(raw);
+	const expected = new Set();
+
+	for (const group of Object.values(doc)) {
+		if (!group || typeof group !== "object") continue;
+		for (const routes of Object.values(group)) {
+			if (!Array.isArray(routes)) continue;
+			for (const r of routes) {
+				const p = normalizePath(r);
+				if (p) expected.add(p);
+			}
+		}
+	}
+	return [...expected];
+}
+
+// returns true if any file contains a matching route definition
+function grepHasRoute(routePath) {
+	const leaderRegex = "[A-Za-z_$][A-Za-z0-9_$]*";
+	const methodsGroup = "(get|post|put|patch|delete|all)";
+	const pathRegex = expressPathToRegex(routePath);
+
+	// match: something.get('/path'
+	const patternCall =
+		`${leaderRegex}\\.${methodsGroup}\\s*\\(\\s*['"]${pathRegex}['"]`;
+
+	// match: something.route('/path').get(...)
+	const patternRoute =
+		`${leaderRegex}\\.route\\s*\\(\\s*['"]${pathRegex}['"]\\s*\\)\\s*\\.${methodsGroup}`;
+
+	// -q = quiet (no output), just exit code
+	const argsBase = ["-R", "-q", "--extended-regexp"];
+
+	try {
+		execFileSync("grep", [...argsBase, patternCall, PROJECT_ROOT], { stdio: "ignore" });
+		return true;
+	} catch (e) {
+		// exit code 1 means "no matches"
+		if (e && typeof e.status === "number" && e.status === 1) {
+			try {
+				execFileSync("grep", [...argsBase, patternRoute, PROJECT_ROOT], { stdio: "ignore" });
+				return true;
+			} catch (e2) {
+				if (e2 && typeof e2.status === "number" && e2.status === 1) return false;
+				throw e2;
+			}
+		}
+		throw e;
+	}
+}
+
+function findRoutesJson() {
+	const candidates = [
+		path.resolve(__dirname, "routes.json"),
+		path.resolve(__dirname, "..", "routes.json"),
+		path.resolve(__dirname, "..", "..", "routes.json"),
+		path.resolve(__dirname, "..", "..", "..", "routes.json"),
+		path.resolve(process.cwd(), "routes.json"),
+	];
+
+	for (const p of candidates) {
+		if (fs.existsSync(p)) return p;
+	}
+
+	throw new Error(
+		"routes.json not found. Tried:\n" +
+		candidates.map((c) => `  - ${c}`).join("\n")
+	);
+}
+
+const ROUTES_JSON = findRoutesJson();
