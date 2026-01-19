@@ -98,7 +98,7 @@ function expectRangeToEqualExpected(res, expected, id = METER_ID) {
             expect(res.body).to.have.property(`${id}`).to.have.property(`${i}`).to.have.property('min').to.be.closeTo(Number(expected[i][0]), DELTA);
             expect(res.body).to.have.property(`${id}`).to.have.property(`${i}`).to.have.property('max').to.be.closeTo(Number(expected[i][1]), DELTA);
         }
-       // Reading has correct start/end date and time.
+        // Reading has correct start/end date and time.
         expect(res.body).to.have.property(`${id}`).to.have.property(`${i}`).to.have.property('startTimestamp').to.equal(Date.parse(expected[i][2]));
         expect(res.body).to.have.property(`${id}`).to.have.property(`${i}`).to.have.property('endTimestamp').to.equal(Date.parse(expected[i][3]));
     }
