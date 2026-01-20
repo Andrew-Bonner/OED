@@ -25,29 +25,27 @@ mocha.describe('Testing User Routes', () => {
 	included in the test */
 	mocha.describe('Check to make sure all routes have been included', () => {
 		mocha.it('all routes in routes.json exist in the codebase', () => {
-			const expectedLocal = loadExpectedLocalPaths();      // router-local derived from routes.json :contentReference[oaicite:1]{index=1}
-			const actualLocal = findActualLocalPathsViaGrep();   // router-local found in code
-
+			const expectedLocal = loadExpectedLocalPaths();      // routes derived from routes.json 
+			const actualLocal = findActualLocalPathsViaGrep();   // routes found in src/server/routes
+			
+			//set that holds routes in routes.json that are missing in the routes files
 			const missing = [...expectedLocal].filter((p) => !actualLocal.has(p));
-			// Optional: show unexpected too (router-local paths in code not listed in routes.json)
+			//set that holds routes found in routes files that are not in route.json 
 			const unexpected = [...actualLocal].filter((p) => !expectedLocal.has(p));
 
 			if (missing.length || unexpected.length) {
 				missing.sort();
 				unexpected.sort();
-
+				//assertion error message on the test failing
 				assert.fail(
 					[
-						'Route mismatch (method ignored; comparing router-local paths):',
 						'',
-						`Missing [${missing.length}] (in routes.json but not found in src/server/routes):`,
+						`${missing.length} route(s): (in routes.json but not found in src/server/routes):`,
 						...missing.map((p) => `  - ${p}`),
 						'',
-						`Unexpected [${unexpected.length}] (found in src/server/routes but not listed in routes.json):`,
+						`${unexpected.length} route(s): (found in src/server/routes but not listed in routes.json):`,
 						...unexpected.map((p) => `  - ${p}`),
-						'',
-						`ROUTES_DIR:  ${ROUTES_DIR}`,
-						`ROUTES_JSON: ${ROUTES_JSON}`
+						''
 					].join('\n')
 				);
 			}
@@ -483,10 +481,6 @@ function resolveParams(route) {
 	return route.replace(/:([A-Za-z_]+)/g, '1');
 }
 
-const STRIP_API_PREFIX_FOR_GREP = true;
-const API_PREFIX = '/api';
-// returns true if any file contains a matching route definition
-
 function findRoutesJson() {
 	const candidates = [
 		path.resolve(__dirname, 'routes.json'),
@@ -546,18 +540,16 @@ function apiToRouterLocal(apiPath) {
 	return s;
 }
 
-/**
- * Load expected router-local paths from routes.json (method ignored)
- */
+
+//Load expected routes from routes.json 
+ 
 function loadExpectedLocalPaths() {
 	if (!fs.existsSync(ROUTES_JSON)) {
 		throw new Error(`routes.json not found at: ${ROUTES_JSON}`);
 	}
 	const raw = fs.readFileSync(ROUTES_JSON, 'utf8');
 	const doc = JSON.parse(raw);
-
 	const expected = new Set();
-
 	for (const group of Object.values(doc)) {
 		if (!group || typeof group !== 'object') continue;
 
@@ -570,17 +562,16 @@ function loadExpectedLocalPaths() {
 			}
 		}
 	}
-
 	return expected;
 }
 
 /**
- * Grep src/server/routes for router-local route definitions using SINGLE QUOTES only:
+ * Grep src/server/routes for routes:
  *   something.get('/path'
  *   something.post('/path'
  *   something.route('/path').get(...)
  *
- * Returns a Set of router-local paths found (as written in code).
+ * Returns a Set of routes found in code.
  */
 function findActualLocalPathsViaGrep() {
 	if (!fs.existsSync(ROUTES_DIR)) {
@@ -591,15 +582,15 @@ function findActualLocalPathsViaGrep() {
 	const WS = '[[:space:]]*';
 	const METHODS = '(get|post|put|patch|delete|all)';
 
-	// Capture the string inside single quotes after .get('...')
+	// Capture the route after .get('...')
 	const patternCall =
 		`${IDENT}${WS}\\.${WS}${METHODS}${WS}\\(${WS}'([^']+)'`;
 
-	// Capture the string inside single quotes after .route('...')
+	// Capture the route after .route('...')
 	const patternRoute =
 		`${IDENT}${WS}\\.${WS}route${WS}\\(${WS}'([^']+)'${WS}\\)`;
 
-	// We'll run grep twice and extract captured groups with JS
+	//run grep twice and extract captured groups
 	const baseArgs = [
 		'-R',
 		'--line-number',
@@ -621,12 +612,9 @@ function findActualLocalPathsViaGrep() {
 
 	const out = run(patternCall) + '\n' + run(patternRoute);
 	const found = new Set();
-
 	for (const line of out.split('\n')) {
-		// Extract first single-quoted string in the matched part
 		const m = line.match(/'([^']+)'/);
 		if (!m) continue;
-
 		const p = normalizePath(m[1]);
 		if (p) found.add(p);
 	}
