@@ -1,8 +1,8 @@
 const { chai, mocha, expect, app, testDB } = require('../common');
 const fs = require('fs');
-const assert = require("assert");
-const path = require("path");
-const { execFileSync } = require("child_process");
+const assert = require('assert');
+const path = require('path');
+const { execFileSync } = require('child_process');
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const sharedBody = { message: 'test' };
@@ -13,7 +13,7 @@ const sharedQuery = {
 };
 const raw = fs.readFileSync('src/server/test/routes/routes.json', 'utf8');
 const routeData = JSON.parse(raw);
-const PROJECT_ROOT = path.resolve(__dirname, "../../.."); // src/server
+const ROUTES_DIR = path.resolve(__dirname, '../../routes');
 
 
 /*This test is built to test the integrity of the standing auth middleware on routes along with the what
@@ -21,43 +21,37 @@ routes can each user access. The routes.json file holds all of the routes along 
 of authentication they have */
 
 mocha.describe('Testing User Routes', () => {
-
 	/*right here will be a router validation check to make sure every route is actually being 
 	included in the test */
 	mocha.describe('Check to make sure all routes have been included', () => {
-		mocha.it("all routes in routes.json exist in the codebase", () => {
-			if (!fs.existsSync(PROJECT_ROOT)) {
-				throw new Error(`PROJECT_ROOT not found: ${PROJECT_ROOT}`);
-			}
-			if (!fs.existsSync(ROUTES_JSON)) {
-				throw new Error(`routes.json not found: ${ROUTES_JSON}`);
-			}
+		mocha.it('all routes in routes.json exist in the codebase', () => {
+			const expectedLocal = loadExpectedLocalPaths();      // router-local derived from routes.json :contentReference[oaicite:1]{index=1}
+			const actualLocal = findActualLocalPathsViaGrep();   // router-local found in code
 
-			const expected = loadExpectedPaths();
-			const missing = [];
+			const missing = [...expectedLocal].filter((p) => !actualLocal.has(p));
+			// Optional: show unexpected too (router-local paths in code not listed in routes.json)
+			const unexpected = [...actualLocal].filter((p) => !expectedLocal.has(p));
 
-			for (const p of expected) {
-				// allow either exact path or stripped /api variant
-				const exactOk = grepHasRoute(p);
-				const stripped = pathForGrep(p);
-				const strippedOk = stripped && stripped !== p ? grepHasRoute(stripped) : false;
-
-				if (!exactOk && !strippedOk) missing.push(p);
-			}
-
-			if (missing.length) {
+			if (missing.length || unexpected.length) {
 				missing.sort();
+				unexpected.sort();
+
 				assert.fail(
 					[
-						"Routes in routes.json not found in code (method ignored):",
-						...missing.map((m) => `  - ${m}`),
-						"",
-						"Note: grep is static; mounted prefixes and dynamic routes may not match.",
-					].join("\n")
+						'Route mismatch (method ignored; comparing router-local paths):',
+						'',
+						`Missing [${missing.length}] (in routes.json but not found in src/server/routes):`,
+						...missing.map((p) => `  - ${p}`),
+						'',
+						`Unexpected [${unexpected.length}] (found in src/server/routes but not listed in routes.json):`,
+						...unexpected.map((p) => `  - ${p}`),
+						'',
+						`ROUTES_DIR:  ${ROUTES_DIR}`,
+						`ROUTES_JSON: ${ROUTES_JSON}`
+					].join('\n')
 				);
 			}
 		});
-
 	});
 
 	//ADMIN USER TESTS
@@ -285,7 +279,6 @@ mocha.describe('Testing User Routes', () => {
 				});
 			});
 
-
 			routeData.admin.POST.forEach((route) => {
 				mocha.it(`POST ${route} - shouldnt allow obvius`, async () => {
 					const url = resolveParams(route);
@@ -453,7 +446,7 @@ class TestUsers {
 			undefined,
 			'adminuser',
 			await bcrypt.hash(this.adminPassword, 10),
-			User.role.ADMIN
+			User.role.ADMIN,
 		);
 	}
 
@@ -462,7 +455,7 @@ class TestUsers {
 			undefined,
 			'acsvuser',
 			await bcrypt.hash(this.csvPassword, 10),
-			User.role.CSV
+			User.role.CSV,
 		);
 	}
 
@@ -471,7 +464,7 @@ class TestUsers {
 			undefined,
 			'exportuser',
 			await bcrypt.hash(this.exportPassword, 10),
-			User.role.EXPORT
+			User.role.EXPORT,
 		);
 	}
 
@@ -480,7 +473,7 @@ class TestUsers {
 			undefined,
 			'obviususer',
 			await bcrypt.hash(this.obviusPassword, 10),
-			User.role.OBVIUS
+			User.role.OBVIUS,
 		);
 	}
 }
@@ -491,94 +484,16 @@ function resolveParams(route) {
 }
 
 const STRIP_API_PREFIX_FOR_GREP = true;
-const API_PREFIX = "/api";
-
-function normalizePath(p) {
-	if (typeof p !== "string") return null;
-	let s = p.trim();
-	if (!s) return null;
-	s = s.split("?")[0];
-	if (!s.startsWith("/")) s = "/" + s;
-	if (s.length > 1) s = s.replace(/\/+$/, "");
-	return s;
-}
-
-function pathForGrep(p) {
-	let s = normalizePath(p);
-	if (!s) return null;
-	if (STRIP_API_PREFIX_FOR_GREP && s.startsWith(API_PREFIX + "/")) {
-		s = s.slice(API_PREFIX.length);
-		if (!s.startsWith("/")) s = "/" + s;
-	}
-	return s;
-}
-
-function expressPathToRegex(p) {
-	const s = normalizePath(p);
-	if (!s) return null;
-	return s.replace(/:([A-Za-z0-9_]+)/g, "[^/]+");
-}
-
-function loadExpectedPaths() {
-	const raw = fs.readFileSync(ROUTES_JSON, "utf8");
-	const doc = JSON.parse(raw);
-	const expected = new Set();
-
-	for (const group of Object.values(doc)) {
-		if (!group || typeof group !== "object") continue;
-		for (const routes of Object.values(group)) {
-			if (!Array.isArray(routes)) continue;
-			for (const r of routes) {
-				const p = normalizePath(r);
-				if (p) expected.add(p);
-			}
-		}
-	}
-	return [...expected];
-}
-
+const API_PREFIX = '/api';
 // returns true if any file contains a matching route definition
-function grepHasRoute(routePath) {
-	const leaderRegex = "[A-Za-z_$][A-Za-z0-9_$]*";
-	const methodsGroup = "(get|post|put|patch|delete|all)";
-	const pathRegex = expressPathToRegex(routePath);
-
-	// match: something.get('/path'
-	const patternCall =
-		`${leaderRegex}\\.${methodsGroup}\\s*\\(\\s*['"]${pathRegex}['"]`;
-
-	// match: something.route('/path').get(...)
-	const patternRoute =
-		`${leaderRegex}\\.route\\s*\\(\\s*['"]${pathRegex}['"]\\s*\\)\\s*\\.${methodsGroup}`;
-
-	// -q = quiet (no output), just exit code
-	const argsBase = ["-R", "-q", "--extended-regexp"];
-
-	try {
-		execFileSync("grep", [...argsBase, patternCall, PROJECT_ROOT], { stdio: "ignore" });
-		return true;
-	} catch (e) {
-		// exit code 1 means "no matches"
-		if (e && typeof e.status === "number" && e.status === 1) {
-			try {
-				execFileSync("grep", [...argsBase, patternRoute, PROJECT_ROOT], { stdio: "ignore" });
-				return true;
-			} catch (e2) {
-				if (e2 && typeof e2.status === "number" && e2.status === 1) return false;
-				throw e2;
-			}
-		}
-		throw e;
-	}
-}
 
 function findRoutesJson() {
 	const candidates = [
-		path.resolve(__dirname, "routes.json"),
-		path.resolve(__dirname, "..", "routes.json"),
-		path.resolve(__dirname, "..", "..", "routes.json"),
-		path.resolve(__dirname, "..", "..", "..", "routes.json"),
-		path.resolve(process.cwd(), "routes.json"),
+		path.resolve(__dirname, 'routes.json'),
+		path.resolve(__dirname, '..', 'routes.json'),
+		path.resolve(__dirname, '..', '..', 'routes.json'),
+		path.resolve(__dirname, '..', '..', '..', 'routes.json'),
+		path.resolve(process.cwd(), 'routes.json'),
 	];
 
 	for (const p of candidates) {
@@ -586,9 +501,135 @@ function findRoutesJson() {
 	}
 
 	throw new Error(
-		"routes.json not found. Tried:\n" +
-		candidates.map((c) => `  - ${c}`).join("\n")
+		'routes.json not found. Tried:\n' +
+		candidates.map((c) => `  - ${c}`).join('\n'),
 	);
 }
 
 const ROUTES_JSON = findRoutesJson();
+
+function normalizePath(p) {
+	if (typeof p !== 'string') return null;
+	let s = p.trim();
+	if (!s) return null;
+	if (!s.startsWith('/')) s = '/' + s;
+	if (s.length > 1) s = s.replace(/\/+$/, '');
+	return s;
+}
+
+function escapeForEgrepLiteral(str) {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Convert a full API path from routes.json into the router-local path
+ * we expect to find inside src/server/routes.
+ *
+ * Examples:
+ *  '/api/users/'              -> '/'
+ *  '/api/users/:user_id'      -> '/:user_id'
+ *  '/api/groups/edit'         -> '/edit'
+ *  '/api/logs/info'           -> '/info'
+ *  '/api/readings/line/raw/meter/:meter_id' -> '/line/raw/meter/:meter_id'
+ */
+function apiToRouterLocal(apiPath) {
+	const s = normalizePath(apiPath);
+	if (!s) return null;
+
+	const parts = s.split('/').filter(Boolean); // ['api','users',':user_id']
+	if (parts.length >= 2 && parts[0] === 'api') {
+		const rest = parts.slice(2); // drop 'api' + resource segment
+		return '/' + rest.join('/');
+	}
+
+	// If it doesn't start with /api, treat as already local
+	return s;
+}
+
+/**
+ * Load expected router-local paths from routes.json (method ignored)
+ */
+function loadExpectedLocalPaths() {
+	if (!fs.existsSync(ROUTES_JSON)) {
+		throw new Error(`routes.json not found at: ${ROUTES_JSON}`);
+	}
+	const raw = fs.readFileSync(ROUTES_JSON, 'utf8');
+	const doc = JSON.parse(raw);
+
+	const expected = new Set();
+
+	for (const group of Object.values(doc)) {
+		if (!group || typeof group !== 'object') continue;
+
+		for (const routes of Object.values(group)) {
+			if (!Array.isArray(routes)) continue;
+
+			for (const r of routes) {
+				const local = apiToRouterLocal(r);
+				if (local !== null) expected.add(local);
+			}
+		}
+	}
+
+	return expected;
+}
+
+/**
+ * Grep src/server/routes for router-local route definitions using SINGLE QUOTES only:
+ *   something.get('/path'
+ *   something.post('/path'
+ *   something.route('/path').get(...)
+ *
+ * Returns a Set of router-local paths found (as written in code).
+ */
+function findActualLocalPathsViaGrep() {
+	if (!fs.existsSync(ROUTES_DIR)) {
+		throw new Error(`routes directory not found at: ${ROUTES_DIR}`);
+	}
+
+	const IDENT = '[A-Za-z_$][A-Za-z0-9_$]*';
+	const WS = '[[:space:]]*';
+	const METHODS = '(get|post|put|patch|delete|all)';
+
+	// Capture the string inside single quotes after .get('...')
+	const patternCall =
+		`${IDENT}${WS}\\.${WS}${METHODS}${WS}\\(${WS}'([^']+)'`;
+
+	// Capture the string inside single quotes after .route('...')
+	const patternRoute =
+		`${IDENT}${WS}\\.${WS}route${WS}\\(${WS}'([^']+)'${WS}\\)`;
+
+	// We'll run grep twice and extract captured groups with JS
+	const baseArgs = [
+		'-R',
+		'--line-number',
+		'--extended-regexp',
+		'--exclude-dir=node_modules',
+		'--exclude-dir=dist',
+		'--exclude-dir=build'
+	];
+
+	function run(pattern) {
+		try {
+			return execFileSync('grep', [...baseArgs, pattern, ROUTES_DIR], { encoding: 'utf8' });
+		} catch (e) {
+			// exit code 1 = no matches (not an error for us)
+			if (e && typeof e.status === 'number' && e.status === 1) return '';
+			throw e;
+		}
+	}
+
+	const out = run(patternCall) + '\n' + run(patternRoute);
+	const found = new Set();
+
+	for (const line of out.split('\n')) {
+		// Extract first single-quoted string in the matched part
+		const m = line.match(/'([^']+)'/);
+		if (!m) continue;
+
+		const p = normalizePath(m[1]);
+		if (p) found.add(p);
+	}
+
+	return found;
+}
