@@ -39,6 +39,7 @@
       "/api/maps/:map_id",
       "/api/meters/",
       "/api/meters/:meter_id",
+      "/line/meters/:meter_ids",
       "/api/preferences/",
       "/api/readings/line/count/meters/:meter_ids",
       "/api/readings/line/raw/meter/:meter_id",
