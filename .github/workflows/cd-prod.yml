@@ -1,0 +1,21 @@
+name: CD (Prod)
+
+on:
+  push:
+    branches: [prod]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Prod Deploy Hook
+        env:
+          PROD_DEPLOY_HOOK: ${{ secrets.PROD_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$PROD_DEPLOY_HOOK" ]; then
+            echo "Missing PROD_DEPLOY_HOOK secret. Set it in GitHub Settings → Secrets."
+            exit 1
+          fi
+          echo "Triggering Render deploy hook..."
+          curl -fsS -X POST "$PROD_DEPLOY_HOOK"
+          echo "Deploy hook triggered successfully."
