@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Trigger Prod Deploy Hook
         env:
-          PROD_DEPLOY_HOOK: ${{ secrets.PROD_DEPLOY_HOOK }}
+          PROD_DEPLOY_HOOK: ${{secrets.OED_DEPLOY}}
         run: |
           if [ -z "$PROD_DEPLOY_HOOK" ]; then
             echo "Missing PROD_DEPLOY_HOOK secret. Set it in GitHub Settings → Secrets."
