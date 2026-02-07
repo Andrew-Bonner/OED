@@ -204,7 +204,47 @@ mocha.describe('readings API', () => {
                 });
 
                 // Add BG17 here
+                mocha.it('BG17: 1 day bars for 15 + 20 minute reading intervals and flow units with +-inf start/end time & kW as kW', async () =>{
+                    const unitDatakW = [
+                        {
+                        name: 'kW', 
+                        identifier: '', 
+                        unitRepresent: Unit.unitRepresentType.FLOW, 
+                        secInRate: 3600, 
+                        typeOfUnit: Unit.unitType.UNIT, 
+                        suffix: '', 
+                        displayable: Unit.displayableType.ALL, 
+                        preferredDisplay: true, 
+                        note: 'kilowatts' 
 
+                        },
+                    {
+                        name: 'Electric', 
+                        identifier: '', 
+                        unitRepresent: Unit.unitRepresentType.FLOW, 
+                        secInRate: 3600, 
+                        typeOfUnit: Unit.unitType.METER, 
+                        suffix: '', 
+                        displayable: Unit.displayableType.NONE, 
+                        preferredDisplay: false, 
+                        note: 'special unit'
+                        
+                        }
+                    ];
+                    const conversionDatakW = [
+                        { 
+                            sourceName: 'Electric', 
+                            destinationName: 'kW', 
+                            bidirectional: false, 
+                            slope: 1, 
+                            intercept: 0, 
+                            note: 'Electric → kW' 
+                        }
+                    ]
+                
+                
+                
+                });
                 // Add BG18 here
 
                 // Add BG19 here
