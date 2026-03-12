@@ -152,7 +152,7 @@ router.get('/:meter_id', optionalAuthMiddleware, async (req, res) => {
 			}
 		} catch (err) {
 			log.error(`Error while performing GET specific meter by id query: ${err}`, err);
-			res.sendStatus(500);
+			res.sendStatus(400);
 		}
 	}
 });
@@ -377,7 +377,7 @@ router.post('/addMeter', adminAuthMiddleware('add meter'), async (req, res) => {
 			res.json(formatMeterForResponse(newMeter, true));
 		} catch (err) {
 			log.error(`Error while inserting new meter with detail "${err['detail']}"`, err);
-			failure(res, 500, err.toString() + ' with detail ' + err['detail']);
+			failure(res, 400, err.toString() + ' with detail ' + err['detail']);
 		}
 	}
 });

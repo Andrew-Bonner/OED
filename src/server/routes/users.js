@@ -116,7 +116,7 @@ router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) =
 		}
 	};
 	if (!validate(req.body, validParams).valid) {
-		res.status(400).json({ message: 'Invalid params' });
+		res.status(406).json({ message: 'Invalid params' });
 	} else {
 		try {
 			const { username, password, role, note } = req.body;
