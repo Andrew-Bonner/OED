@@ -63,7 +63,7 @@ router.post('/', credentialsRequestValidationMiddleware, async (req, res) => {
 				res.status(401).send({ text: 'Not authorized' });
 			} else {
 				log.error(`Unable to check user password for ${req.body.username}`, err);
-				res.status(500).send({ text: 'Internal Server Error' });
+				res.status(408).send({ text: 'Internal Server Error' });
 			}
 		}
 	}
