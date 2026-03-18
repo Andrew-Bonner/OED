@@ -254,7 +254,12 @@ router.post('/delete', adminAuthMiddleware('delete a user'), async (req, res) =>
 				res.sendStatus(400);
 			} else {
 				await User.deleteUser(username, conn);
-				res.sendStatus(200);
+				if(user.username !== username){
+					res.sendStatus(200);
+				} else {
+					res.sendStatus(400);
+					log.error('Unable to delete user');
+				}
 			}
 		} catch (error) {
 			log.error('Error while performing delete user request', error);
