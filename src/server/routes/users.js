@@ -83,7 +83,7 @@ router.get('/:user_id', adminAuthMiddleware('get one user'), async (req, res) =>
 			res.json(rows);
 		} catch (err) {
 			log.error(`Error while performing GET specific user by id query: ${err}`, err);
-			res.sendStatus(500);
+			res.sendStatus(400);
 		}
 	}
 });
@@ -133,7 +133,7 @@ router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) =
 			}
 		} catch (error) {
 			log.error(`Error while performing POST request to create user: ${error}`, error);
-			res.status(500).send({ message: 'Internal Server Error', error: error });
+			res.status(400).send({ message: 'Internal Server Error', error: error });
 		}
 	}
 });
@@ -220,7 +220,7 @@ router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
 
 		} catch (error) {
 			log.error('Error while performing edit user request.', error);
-			res.status(500).json({
+			res.status(400).json({
 				message: 'Error while performing edit user request.',
 				error: error.message
 			});
@@ -258,7 +258,7 @@ router.post('/delete', adminAuthMiddleware('delete a user'), async (req, res) =>
 			}
 		} catch (error) {
 			log.error('Error while performing delete user request', error);
-			res.sendStatus(500);
+			res.sendStatus(400);
 		}
 	}
 });
